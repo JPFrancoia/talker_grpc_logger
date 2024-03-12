@@ -15,6 +15,8 @@ class TalkerHttpLogger extends ClientInterceptor {
   ResponseFuture<R> interceptUnary<Q, R>(ClientMethod<Q, R> method, Q request,
       CallOptions options, ClientUnaryInvoker<Q, R> invoker) {
     print('interceptUnary');
+    print(method);
+    print(request);
     return invoker(method, request, options);
   }
 
