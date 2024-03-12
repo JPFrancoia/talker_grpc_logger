@@ -16,7 +16,8 @@ class TalkerHttpLogger extends ClientInterceptor {
       CallOptions options, ClientUnaryInvoker<Q, R> invoker) {
     print('interceptUnary');
     print(method);
-    print(request);
+    print("PATH: ${method.path}");
+    print("REQUEST: $request");
     return invoker(method, request, options);
   }
 
