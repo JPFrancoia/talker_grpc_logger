@@ -18,7 +18,12 @@ class TalkerHttpLogger extends ClientInterceptor {
     print(method);
     print("PATH: ${method.path}");
     print("REQUEST: $request");
-    return invoker(method, request, options);
+    // return invoker(method, request, options);
+    final response = invoker(method, request, options);
+    response.then((r) {
+      print('got response: $r');
+    });
+    return response;
   }
 
   @override
