@@ -21,6 +21,7 @@ class TalkerHttpLogger extends ClientInterceptor {
     // return invoker(method, request, options);
     final response = invoker(method, request, options);
     response.then((r) {
+      print(r.runtimeType);
       print('got response: $r');
     });
     return response;
