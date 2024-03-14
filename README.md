@@ -3,5 +3,5 @@ Lightweight and customizable [grpc](https://pub.dev/packages/grpc) client logger
 [Talker](https://github.com/Frezyx/talker) - Advanced exception handling and logging for dart/flutter applications 🚀
 
 ## Preview
-This is how the logs of your http requests will look in the console
+This is how the logs of your grpc requests will look in the console
 ![](preview.jpg)
