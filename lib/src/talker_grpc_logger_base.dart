@@ -74,12 +74,13 @@ class GrpcRequestLog<Q, R> extends TalkerLog {
   AnsiPen get pen => (AnsiPen()..xterm(219));
 
   @override
-  String get title => 'grpc-request';
+  String get key => 'grpc-request';
 
   @override
   String generateTextMessage() {
     var time = TalkerDateTimeFormatter(DateTime.now()).timeAndSeconds;
-    var msg = '[$title] | $time | [${method.path}]';
+    // var msg = '[$title] | $time | [${method.path}]';
+    var msg = '[$title] [${method.path}] $message';
 
     msg += '\nRequest: ${request.toString().replaceAll("\n", " ")}';
 
@@ -132,8 +133,7 @@ class GrpcErrorLog<Q, R> extends TalkerLog {
 
   @override
   String generateTextMessage() {
-    var time = TalkerDateTimeFormatter(DateTime.now()).timeAndSeconds;
-    var msg = '[$title] | $time | [${method.path}]';
+    var msg = '[$title] [${method.path}] $message';
     msg += '\nDuration: $durationMs ms';
     msg += '\nError code: ${grpcError.codeName}';
     msg += '\nError message: ${grpcError.message}';
@@ -182,8 +182,8 @@ class GrpcResponseLog<Q, R> extends TalkerLog {
 
   @override
   String generateTextMessage() {
-    var time = TalkerDateTimeFormatter(DateTime.now()).timeAndSeconds;
-    var msg = '[$title] | $time | [${method.path}]';
+    var msg = '[$title] [${method.path}] $message';
+
     msg += '\nDuration: $durationMs ms';
     return msg;
   }
