@@ -6,7 +6,6 @@ import 'package:talker/talker.dart';
 import 'package:grpc/grpc.dart';
 
 const encoder = JsonEncoder.withIndent('  ');
-
 class TalkerGrpcLogger extends ClientInterceptor {
   TalkerGrpcLogger({Talker? talker, this.obfuscateToken = true}) {
     _talker = talker ?? Talker();
@@ -71,15 +70,15 @@ class GrpcRequestLog<Q, R> extends TalkerLog {
   final bool obfuscateToken;
 
   @override
-  AnsiPen get pen => (AnsiPen()..xterm(219));
+  AnsiPen get pen => AnsiPen()..xterm(219);
 
   @override
-  String get title => 'grpc-request';
-
+  String get key => TalkerLogType.httpRequest.key;
+ 
   @override
   String generateTextMessage() {
     var time = TalkerDateTimeFormatter(DateTime.now()).timeAndSeconds;
-    var msg = '[$title] | $time | [${method.path}]';
+    var msg = '[$title] | $time | ${method.path}';
 
     msg += '\nRequest: ${request.toString().replaceAll("\n", " ")}';
 
@@ -101,7 +100,9 @@ class GrpcRequestLog<Q, R> extends TalkerLog {
       }
     } catch (_) {
       // TODO: add handling can`t convert
+        // talker.warning('error');
     }
+    // talker.warning('final msg: $msg');
     return msg;
   }
 }
@@ -125,15 +126,15 @@ class GrpcErrorLog<Q, R> extends TalkerLog {
   final bool obfuscateToken;
 
   @override
-  AnsiPen get pen => (AnsiPen()..xterm(219));
+  AnsiPen get pen => AnsiPen()..red();
 
   @override
-  String get title => 'grpc-error';
+  String get key => TalkerLogType.httpError.key;
 
   @override
   String generateTextMessage() {
     var time = TalkerDateTimeFormatter(DateTime.now()).timeAndSeconds;
-    var msg = '[$title] | $time | [${method.path}]';
+    var msg = '[$title] | $time | ${method.path}';
     msg += '\nDuration: $durationMs ms';
     msg += '\nError code: ${grpcError.codeName}';
     msg += '\nError message: ${grpcError.message}';
@@ -175,15 +176,15 @@ class GrpcResponseLog<Q, R> extends TalkerLog {
   final int durationMs;
 
   @override
-  AnsiPen get pen => (AnsiPen()..xterm(219));
+  AnsiPen get pen => AnsiPen()..xterm(46);
 
   @override
-  String get title => 'grpc-response';
+  String get key => TalkerLogType.httpResponse.key;
 
   @override
   String generateTextMessage() {
     var time = TalkerDateTimeFormatter(DateTime.now()).timeAndSeconds;
-    var msg = '[$title] | $time | [${method.path}]';
+    var msg = '[$title] | $time | ${method.path}';
     msg += '\nDuration: $durationMs ms';
     return msg;
   }
