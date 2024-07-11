@@ -76,7 +76,7 @@ class GrpcRequestLog<Q, R> extends TalkerLog {
   String get key => TalkerLogType.httpRequest.key;
  
   @override
-  String generateTextMessage() {
+  String generateTextMessage({TimeFormat timeFormat = TimeFormat.timeAndSeconds}) {
     var time = TalkerDateTimeFormatter(DateTime.now()).timeAndSeconds;
     var msg = '[$title] | $time | ${method.path}';
 
@@ -132,7 +132,7 @@ class GrpcErrorLog<Q, R> extends TalkerLog {
   String get key => TalkerLogType.httpError.key;
 
   @override
-  String generateTextMessage() {
+  String generateTextMessage({TimeFormat timeFormat = TimeFormat.timeAndSeconds}) {
     var time = TalkerDateTimeFormatter(DateTime.now()).timeAndSeconds;
     var msg = '[$title] | $time | ${method.path}';
     msg += '\nDuration: $durationMs ms';
@@ -182,10 +182,11 @@ class GrpcResponseLog<Q, R> extends TalkerLog {
   String get key => TalkerLogType.httpResponse.key;
 
   @override
-  String generateTextMessage() {
+  String generateTextMessage({TimeFormat timeFormat = TimeFormat.timeAndSeconds}) {
     var time = TalkerDateTimeFormatter(DateTime.now()).timeAndSeconds;
     var msg = '[$title] | $time | ${method.path}';
     msg += '\nDuration: $durationMs ms';
     return msg;
   }
 }
+
