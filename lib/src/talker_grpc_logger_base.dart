@@ -6,13 +6,18 @@ import 'package:talker/talker.dart';
 import 'package:grpc/grpc.dart';
 
 const encoder = JsonEncoder.withIndent('  ');
+
 class TalkerGrpcLogger extends ClientInterceptor {
-  TalkerGrpcLogger({Talker? talker, this.obfuscateToken = true}) {
+  TalkerGrpcLogger(
+      {Talker? talker,
+      this.obfuscatePayloadForPaths = const {},
+      this.obfuscateToken = true}) {
     _talker = talker ?? Talker();
   }
 
   late Talker _talker;
   final bool obfuscateToken;
+  Set<String> obfuscatePayloadForPaths = {};
 
   @override
   ResponseFuture<R> interceptUnary<Q, R>(ClientMethod<Q, R> method, Q request,
@@ -21,7 +26,8 @@ class TalkerGrpcLogger extends ClientInterceptor {
         method: method,
         request: request,
         options: options,
-        obfuscateToken: obfuscateToken));
+        obfuscateToken: obfuscateToken,
+        obfuscatePayload: obfuscatePayloadForPaths.contains(method.path)));
 
     DateTime startTime = DateTime.now();
     final response = invoker(method, request, options);
@@ -38,7 +44,8 @@ class TalkerGrpcLogger extends ClientInterceptor {
           options: options,
           grpcError: e,
           durationMs: elapsedTime.inMilliseconds,
-          obfuscateToken: obfuscateToken));
+          obfuscateToken: obfuscateToken,
+          obfuscatePayload: obfuscatePayloadForPaths.contains(method.path)));
     });
     return response;
   }
@@ -62,25 +69,32 @@ class GrpcRequestLog<Q, R> extends TalkerLog {
     required this.request,
     required this.options,
     this.obfuscateToken = true,
+    this.obfuscatePayload = false,
   }) : super(title);
 
   final ClientMethod<Q, R> method;
   final Q request;
   final CallOptions options;
   final bool obfuscateToken;
+  final bool obfuscatePayload;
 
   @override
   AnsiPen get pen => AnsiPen()..xterm(219);
 
   @override
   String get key => TalkerLogType.httpRequest.key;
- 
+
   @override
-  String generateTextMessage({TimeFormat timeFormat = TimeFormat.timeAndSeconds}) {
+  String generateTextMessage(
+      {TimeFormat timeFormat = TimeFormat.timeAndSeconds}) {
     var time = TalkerDateTimeFormatter(DateTime.now()).timeAndSeconds;
     var msg = '[$title] | $time | ${method.path}';
 
-    msg += '\nRequest: ${request.toString().replaceAll("\n", " ")}';
+    if (obfuscatePayload) {
+      msg += '\nRequest: [obfuscated]';
+    } else {
+      msg += '\nRequest: ${request.toString().replaceAll("\n", " ")}';
+    }
 
     // Add the headers to the log message, but obfuscate the token if
     // necessary.
@@ -100,7 +114,7 @@ class GrpcRequestLog<Q, R> extends TalkerLog {
       }
     } catch (_) {
       // TODO: add handling can`t convert
-        // talker.warning('error');
+      // talker.warning('error');
     }
     // talker.warning('final msg: $msg');
     return msg;
@@ -116,6 +130,7 @@ class GrpcErrorLog<Q, R> extends TalkerLog {
     required this.grpcError,
     required this.durationMs,
     this.obfuscateToken = true,
+    this.obfuscatePayload = false,
   }) : super(title);
 
   final ClientMethod<Q, R> method;
@@ -124,6 +139,7 @@ class GrpcErrorLog<Q, R> extends TalkerLog {
   final GrpcError grpcError;
   final int durationMs;
   final bool obfuscateToken;
+  final bool obfuscatePayload;
 
   @override
   AnsiPen get pen => AnsiPen()..red();
@@ -132,13 +148,19 @@ class GrpcErrorLog<Q, R> extends TalkerLog {
   String get key => TalkerLogType.httpError.key;
 
   @override
-  String generateTextMessage({TimeFormat timeFormat = TimeFormat.timeAndSeconds}) {
+  String generateTextMessage(
+      {TimeFormat timeFormat = TimeFormat.timeAndSeconds}) {
     var time = TalkerDateTimeFormatter(DateTime.now()).timeAndSeconds;
     var msg = '[$title] | $time | ${method.path}';
     msg += '\nDuration: $durationMs ms';
     msg += '\nError code: ${grpcError.codeName}';
     msg += '\nError message: ${grpcError.message}';
-    msg += '\nRequest: ${request.toString().replaceAll("\n", " ")}';
+
+    if (obfuscatePayload) {
+      msg += '\nRequest: [obfuscated]';
+    } else {
+      msg += '\nRequest: ${request.toString().replaceAll("\n", " ")}';
+    }
 
     // Add the headers to the log message, but obfuscate the token if
     // necessary.
@@ -182,11 +204,11 @@ class GrpcResponseLog<Q, R> extends TalkerLog {
   String get key => TalkerLogType.httpResponse.key;
 
   @override
-  String generateTextMessage({TimeFormat timeFormat = TimeFormat.timeAndSeconds}) {
+  String generateTextMessage(
+      {TimeFormat timeFormat = TimeFormat.timeAndSeconds}) {
     var time = TalkerDateTimeFormatter(DateTime.now()).timeAndSeconds;
     var msg = '[$title] | $time | ${method.path}';
     msg += '\nDuration: $durationMs ms';
     return msg;
   }
 }
-
